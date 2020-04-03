@@ -16,8 +16,6 @@
 
 package com.alibaba.cloud.sentinel.feign;
 
-import static feign.Util.checkNotNull;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,6 +35,8 @@ import feign.InvocationHandlerFactory.MethodHandler;
 import feign.MethodMetadata;
 import feign.Target;
 import feign.hystrix.FallbackFactory;
+
+import static feign.Util.checkNotNull;
 
 /**
  * {@link InvocationHandler} handle invocation that protected by Sentinel
@@ -90,7 +90,7 @@ public class SentinelInvocationHandler implements InvocationHandler {
 		// only handle by HardCodedTarget
 		if (target instanceof Target.HardCodedTarget) {
 			Target.HardCodedTarget hardCodedTarget = (Target.HardCodedTarget) target;
-			MethodMetadata methodMetadata = SentinelContractHolder.metadataMap
+			MethodMetadata methodMetadata = SentinelContractHolder.METADATA_MAP
 					.get(hardCodedTarget.type().getName()
 							+ Feign.configKey(hardCodedTarget.type(), method));
 			if (methodMetadata == null) {

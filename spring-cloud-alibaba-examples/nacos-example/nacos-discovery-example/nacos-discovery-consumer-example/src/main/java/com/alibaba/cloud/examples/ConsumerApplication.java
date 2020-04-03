@@ -1,5 +1,8 @@
 package com.alibaba.cloud.examples;
 
+import com.alibaba.cloud.examples.ConsumerApplication.EchoService;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -13,9 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
-import com.alibaba.cloud.examples.ConsumerApplication.EchoService;
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
-
 /**
  * @author xiaojing
  */
@@ -26,6 +26,7 @@ public class ConsumerApplication {
 
 	@LoadBalanced
 	@Bean
+	@SentinelRestTemplate(urlCleanerClass = UrlCleaner.class, urlCleaner = "clean")
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}

@@ -18,15 +18,16 @@ package com.alibaba.cloud.nacos.registry;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cloud.client.serviceregistry.Registration;
-import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
-import org.springframework.util.StringUtils;
-
 import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.cloud.client.serviceregistry.Registration;
+import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
+import org.springframework.util.StringUtils;
 
 /**
  * @author xiaojing
@@ -54,12 +55,13 @@ public class NacosServiceRegistry implements ServiceRegistry<Registration> {
 		}
 
 		String serviceId = registration.getServiceId();
+		String group = nacosDiscoveryProperties.getGroup();
 
 		Instance instance = getNacosInstanceFromRegistration(registration);
 
 		try {
-			namingService.registerInstance(serviceId, instance);
-			log.info("nacos registry, {} {}:{} register finished", serviceId,
+			namingService.registerInstance(serviceId, group, instance);
+			log.info("nacos registry, {} {} {}:{} register finished", group, serviceId,
 					instance.getIp(), instance.getPort());
 		}
 		catch (Exception e) {
@@ -78,11 +80,11 @@ public class NacosServiceRegistry implements ServiceRegistry<Registration> {
 			return;
 		}
 
-		NamingService namingService = nacosDiscoveryProperties.namingServiceInstance();
 		String serviceId = registration.getServiceId();
+		String group = nacosDiscoveryProperties.getGroup();
 
 		try {
-			namingService.deregisterInstance(serviceId, registration.getHost(),
+			namingService.deregisterInstance(serviceId, group, registration.getHost(),
 					registration.getPort(), nacosDiscoveryProperties.getClusterName());
 		}
 		catch (Exception e) {
@@ -153,6 +155,7 @@ public class NacosServiceRegistry implements ServiceRegistry<Registration> {
 		instance.setWeight(nacosDiscoveryProperties.getWeight());
 		instance.setClusterName(nacosDiscoveryProperties.getClusterName());
 		instance.setMetadata(registration.getMetadata());
+
 		return instance;
 	}
 

@@ -16,19 +16,10 @@
 
 package com.alibaba.cloud.nacos.ribbon;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.junit.Test;
 
 import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
 import com.alibaba.cloud.nacos.test.NacosMockTest;
@@ -36,6 +27,13 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
 import com.netflix.client.config.IClientConfig;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author xiaojing
@@ -52,7 +50,8 @@ public class NacosServerListTests {
 		NamingService namingService = mock(NamingService.class);
 
 		when(nacosDiscoveryProperties.namingServiceInstance()).thenReturn(namingService);
-		when(namingService.selectInstances(anyString(), eq(true))).thenReturn(null);
+		when(namingService.selectInstances(anyString(), eq("DEFAULT"), eq(true)))
+				.thenReturn(null);
 
 		NacosServerList serverList = new NacosServerList(nacosDiscoveryProperties);
 		List<NacosServer> servers = serverList.getInitialListOfServers();
@@ -65,7 +64,7 @@ public class NacosServerListTests {
 
 		ArrayList<Instance> instances = new ArrayList<>();
 		instances.add(NacosMockTest.serviceInstance("test-service", false,
-				Collections.<String, String> emptyMap()));
+				new HashMap<String, String>()));
 
 		NacosDiscoveryProperties nacosDiscoveryProperties = mock(
 				NacosDiscoveryProperties.class);
@@ -73,7 +72,9 @@ public class NacosServerListTests {
 		NamingService namingService = mock(NamingService.class);
 
 		when(nacosDiscoveryProperties.namingServiceInstance()).thenReturn(namingService);
-		when(namingService.selectInstances(eq("test-service"), eq(true)))
+		when(nacosDiscoveryProperties.getGroup()).thenReturn("DEFAULT");
+		when(nacosDiscoveryProperties.getGroup()).thenReturn("DEFAULT");
+		when(namingService.selectInstances(eq("test-service"), eq("DEFAULT"), eq(true)))
 				.thenReturn(instances);
 
 		IClientConfig clientConfig = mock(IClientConfig.class);
@@ -105,6 +106,7 @@ public class NacosServerListTests {
 		NamingService namingService = mock(NamingService.class);
 
 		when(nacosDiscoveryProperties.namingServiceInstance()).thenReturn(namingService);
+		when(nacosDiscoveryProperties.getGroup()).thenReturn("DEFAULT");
 
 		List<Instance> returnInstances = new LinkedList<>();
 
@@ -114,7 +116,7 @@ public class NacosServerListTests {
 			}
 		}
 
-		when(namingService.selectInstances(eq("test-service"), eq(true)))
+		when(namingService.selectInstances(eq("test-service"), eq("DEFAULT"), eq(true)))
 				.thenReturn(returnInstances);
 
 		IClientConfig clientConfig = mock(IClientConfig.class);
@@ -150,6 +152,7 @@ public class NacosServerListTests {
 		NamingService namingService = mock(NamingService.class);
 
 		when(nacosDiscoveryProperties.namingServiceInstance()).thenReturn(namingService);
+		when(nacosDiscoveryProperties.getGroup()).thenReturn("DEFAULT");
 
 		List<Instance> returnInstances = new LinkedList<>();
 		for (Instance instance : instances) {
@@ -158,9 +161,8 @@ public class NacosServerListTests {
 			}
 		}
 
-		when(namingService.selectInstances(eq("test-service"), eq(true)))
+		when(namingService.selectInstances(eq("test-service"), eq("DEFAULT"), eq(true)))
 				.thenReturn(returnInstances);
-
 		IClientConfig clientConfig = mock(IClientConfig.class);
 		when(clientConfig.getClientName()).thenReturn("test-service");
 		NacosServerList serverList = new NacosServerList(nacosDiscoveryProperties);

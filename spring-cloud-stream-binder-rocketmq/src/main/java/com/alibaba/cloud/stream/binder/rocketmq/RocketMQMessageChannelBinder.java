@@ -16,27 +16,11 @@
 
 package com.alibaba.cloud.stream.binder.rocketmq;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.rocketmq.acl.common.AclClientRPCHook;
-import org.apache.rocketmq.acl.common.SessionCredentials;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.common.UtilAll;
-import org.apache.rocketmq.remoting.RPCHook;
-import org.apache.rocketmq.spring.autoconfigure.RocketMQProperties;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.apache.rocketmq.spring.support.RocketMQUtil;
-import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
-import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
-import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
-import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
-import org.springframework.cloud.stream.provisioning.ConsumerDestination;
-import org.springframework.cloud.stream.provisioning.ProducerDestination;
-import org.springframework.integration.core.MessageProducer;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.util.StringUtils;
+import java.util.Set;
 
 import com.alibaba.cloud.stream.binder.rocketmq.consuming.RocketMQListenerBindingContainer;
 import com.alibaba.cloud.stream.binder.rocketmq.integration.RocketMQInboundChannelAdapter;
@@ -47,8 +31,30 @@ import com.alibaba.cloud.stream.binder.rocketmq.properties.RocketMQConsumerPrope
 import com.alibaba.cloud.stream.binder.rocketmq.properties.RocketMQExtendedBindingProperties;
 import com.alibaba.cloud.stream.binder.rocketmq.properties.RocketMQProducerProperties;
 import com.alibaba.cloud.stream.binder.rocketmq.provisioning.RocketMQTopicProvisioner;
+import com.alibaba.cloud.stream.binder.rocketmq.provisioning.selector.PartitionMessageQueueSelector;
+import com.alibaba.cloud.stream.binder.rocketmq.support.JacksonRocketMQHeaderMapper;
+import com.alibaba.cloud.stream.binder.rocketmq.support.RocketMQHeaderMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.spring.autoconfigure.RocketMQProperties;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.support.RocketMQUtil;
+
+import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
+import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
+import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
+import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
+import org.springframework.cloud.stream.provisioning.ConsumerDestination;
+import org.springframework.cloud.stream.provisioning.ProducerDestination;
+import org.springframework.integration.core.MessageProducer;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.util.StringUtils;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
@@ -144,15 +150,19 @@ public class RocketMQMessageChannelBinder extends
 				producer.setMaxMessageSize(
 						producerProperties.getExtension().getMaxMessageSize());
 				rocketMQTemplate.setProducer(producer);
+				if (producerProperties.isPartitioned()) {
+					rocketMQTemplate
+							.setMessageQueueSelector(new PartitionMessageQueueSelector());
+				}
 			}
 
 			RocketMQMessageHandler messageHandler = new RocketMQMessageHandler(
 					rocketMQTemplate, destination.getName(), producerGroup,
 					producerProperties.getExtension().getTransactional(),
-					instrumentationManager);
+					instrumentationManager, producerProperties);
 			messageHandler.setBeanFactory(this.getApplicationContext().getBeanFactory());
 			messageHandler.setSync(producerProperties.getExtension().getSync());
-
+			messageHandler.setHeaderMapper(createHeaderMapper(producerProperties));
 			if (errorChannel != null) {
 				messageHandler.setSendFailureChannel(errorChannel);
 			}
@@ -185,6 +195,7 @@ public class RocketMQMessageChannelBinder extends
 				consumerProperties.getExtension().getDelayLevelWhenNextConsume());
 		listenerContainer
 				.setNameServer(rocketBinderConfigurationProperties.getNameServer());
+		listenerContainer.setHeaderMapper(createHeaderMapper(consumerProperties));
 
 		RocketMQInboundChannelAdapter rocketInboundChannelAdapter = new RocketMQInboundChannelAdapter(
 				listenerContainer, consumerProperties, instrumentationManager);
@@ -220,4 +231,28 @@ public class RocketMQMessageChannelBinder extends
 	public Map<String, String> getTopicInUse() {
 		return topicInUse;
 	}
+
+	private RocketMQHeaderMapper createHeaderMapper(
+			final ExtendedConsumerProperties<RocketMQConsumerProperties> extendedConsumerProperties) {
+		Set<String> trustedPackages = extendedConsumerProperties.getExtension()
+				.getTrustedPackages();
+		return createHeaderMapper(trustedPackages);
+	}
+
+	private RocketMQHeaderMapper createHeaderMapper(
+			final ExtendedProducerProperties<RocketMQProducerProperties> producerProperties) {
+		return createHeaderMapper(new ArrayList<String>());
+	}
+
+	private RocketMQHeaderMapper createHeaderMapper(Collection<String> trustedPackages) {
+		ObjectMapper objectMapper = this.getApplicationContext().getParent()
+				.getBeansOfType(ObjectMapper.class).values().iterator().next();
+		JacksonRocketMQHeaderMapper headerMapper = new JacksonRocketMQHeaderMapper(
+				objectMapper);
+		if (!StringUtils.isEmpty(trustedPackages)) {
+			headerMapper.addTrustedPackages(trustedPackages);
+		}
+		return headerMapper;
+	}
+
 }

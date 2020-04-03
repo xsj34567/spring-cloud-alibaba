@@ -16,15 +16,15 @@
 
 package com.alibaba.cloud.nacos.endpoint;
 
+import com.alibaba.cloud.nacos.NacosConfigProperties;
+import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
-
-import com.alibaba.cloud.nacos.NacosConfigProperties;
-import com.alibaba.cloud.nacos.refresh.NacosRefreshHistory;
 
 /**
  * @author xiaojing
@@ -48,7 +48,7 @@ public class NacosConfigEndpointAutoConfiguration {
 
 	@Bean
 	public NacosConfigHealthIndicator nacosConfigHealthIndicator() {
-		return new NacosConfigHealthIndicator(nacosConfigProperties,
+		return new NacosConfigHealthIndicator(
 				nacosConfigProperties.configServiceInstance());
 	}
 }

@@ -21,8 +21,11 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
+import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -30,8 +33,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.alibaba.csp.sentinel.adapter.servlet.CommonFilter;
 
 /**
  * @author xiaojing
@@ -66,6 +67,8 @@ public class SentinelWebAutoConfiguration {
 		Filter filter = new CommonFilter();
 		registration.setFilter(filter);
 		registration.setOrder(filterConfig.getOrder());
+		registration.addInitParameter("HTTP_METHOD_SPECIFY",
+				String.valueOf(properties.getHttpMethodSpecify()));
 		log.info("[Sentinel Starter] register Sentinel with urlPatterns: {}.",
 				filterConfig.getUrlPatterns());
 		return registration;
