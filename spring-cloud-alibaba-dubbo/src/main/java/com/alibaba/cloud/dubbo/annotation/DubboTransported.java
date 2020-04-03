@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2018 the original author or authors.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,21 +15,21 @@
  */
 package com.alibaba.cloud.dubbo.annotation;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_RETRIES;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.client.RestTemplate;
+
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_RETRIES;
 
 /**
  * {@link DubboTransported @DubboTransported} annotation indicates that the traditional
@@ -52,6 +51,7 @@ import org.springframework.web.client.RestTemplate;
  * </ol>
  * <p>
  *
+ * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see FeignClient
  * @see LoadBalanced
  */
@@ -81,7 +81,6 @@ public @interface DubboTransported {
 	 * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by
 	 * default, and the interval for retry connecting is 2000 ms
 	 *
-	 * @see Constants#DEFAULT_RECONNECT_PERIOD
 	 * @see Reference#reconnect()
 	 */
 	String reconnect() default "${dubbo.transport.reconnect:2000}";
@@ -97,7 +96,6 @@ public @interface DubboTransported {
 	/**
 	 * Service invocation retry times
 	 *
-	 * @see Constants#DEFAULT_RETRIES
 	 * @see Reference#retries()
 	 */
 	int retries() default DEFAULT_RETRIES;
@@ -105,7 +103,6 @@ public @interface DubboTransported {
 	/**
 	 * Load balance strategy, legal values include: random, roundrobin, leastactive
 	 *
-	 * @see Constants#DEFAULT_LOADBALANCE
 	 * @see Reference#loadbalance()
 	 */
 	String loadbalance() default "${dubbo.transport.loadbalance:}";

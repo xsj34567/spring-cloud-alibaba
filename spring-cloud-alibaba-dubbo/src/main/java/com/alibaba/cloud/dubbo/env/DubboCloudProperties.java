@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2018 the original author or authors.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,15 +15,15 @@
  */
 package com.alibaba.cloud.dubbo.env;
 
-import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
-import static org.springframework.util.StringUtils.hasText;
-import static org.springframework.util.StringUtils.trimAllWhitespace;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
+import static org.springframework.util.StringUtils.hasText;
+import static org.springframework.util.StringUtils.trimAllWhitespace;
 
 /**
  * Dubbo Cloud {@link ConfigurationProperties Properties}
@@ -47,12 +46,40 @@ public class DubboCloudProperties {
 	 */
 	private String subscribedServices = ALL_DUBBO_SERVICES;
 
+	/**
+	 * The Service Instance changed do not means Dubbo service ready, need retry
+	 * mechanism. Retry count of Generic Invoke.
+	 */
+	private int retryCount = 5;
+
+	/**
+	 * The Service Instance changed do not means Dubbo service ready, need retry
+	 * mechanism. Retry interval of Generic Invoke, milliseconds unit.
+	 */
+	private int interval = 10000;
+
 	public String getSubscribedServices() {
 		return subscribedServices;
 	}
 
 	public void setSubscribedServices(String subscribedServices) {
 		this.subscribedServices = subscribedServices;
+	}
+
+	public int getRetryCount() {
+		return retryCount;
+	}
+
+	public void setRetryCount(int retryCount) {
+		this.retryCount = retryCount;
+	}
+
+	public int getInterval() {
+		return interval;
+	}
+
+	public void setInterval(int interval) {
+		this.interval = interval;
 	}
 
 	/**

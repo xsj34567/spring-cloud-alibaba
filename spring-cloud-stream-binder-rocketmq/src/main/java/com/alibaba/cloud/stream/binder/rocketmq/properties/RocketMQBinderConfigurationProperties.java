@@ -16,10 +16,11 @@
 
 package com.alibaba.cloud.stream.binder.rocketmq.properties;
 
-import org.apache.rocketmq.common.MixAll;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import com.alibaba.cloud.stream.binder.rocketmq.RocketMQBinderConstants;
+
+import org.apache.rocketmq.common.MixAll;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Timur Valiev
@@ -93,4 +94,5 @@ public class RocketMQBinderConfigurationProperties {
 	public void setCustomizedTraceTopic(String customizedTraceTopic) {
 		this.customizedTraceTopic = customizedTraceTopic;
 	}
+
 }

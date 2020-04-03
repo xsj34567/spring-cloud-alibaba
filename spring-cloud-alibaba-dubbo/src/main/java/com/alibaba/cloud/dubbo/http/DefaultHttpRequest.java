@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2018 the original author or authors.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +14,6 @@
  * limitations under the License.
  */
 package com.alibaba.cloud.dubbo.http;
-
-import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import java.net.URI;
 import java.util.List;
@@ -28,6 +25,8 @@ import org.springframework.http.HttpRequest;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 /**
  * Default {@link HttpRequest} implementation
@@ -49,6 +48,10 @@ public class DefaultHttpRequest implements HttpRequest {
 		this.headers.putAll(headers);
 	}
 
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	private URI buildURI(String path, Map<String, List<String>> params) {
 		UriComponentsBuilder builder = fromPath(path)
 				.queryParams(new LinkedMultiValueMap<>(params));
@@ -60,6 +63,7 @@ public class DefaultHttpRequest implements HttpRequest {
 		return HttpMethod.resolve(getMethodValue());
 	}
 
+	@Override
 	public String getMethodValue() {
 		return method;
 	}
@@ -72,10 +76,6 @@ public class DefaultHttpRequest implements HttpRequest {
 	@Override
 	public HttpHeaders getHeaders() {
 		return headers;
-	}
-
-	public static Builder builder() {
-		return new Builder();
 	}
 
 	/**

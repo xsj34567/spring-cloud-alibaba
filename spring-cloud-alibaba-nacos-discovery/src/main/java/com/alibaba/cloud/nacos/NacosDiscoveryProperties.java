@@ -16,15 +16,6 @@
 
 package com.alibaba.cloud.nacos;
 
-import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
-import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
-import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
-import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -37,15 +28,6 @@ import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.commons.util.InetUtils;
-import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
-
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.naming.NamingMaintainFactory;
 import com.alibaba.nacos.api.naming.NamingMaintainService;
@@ -53,10 +35,32 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.commons.util.InetUtils;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
+
+import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
+import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
+import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
+import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
+import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
+
 /**
  * @author dungu.zpf
  * @author xiaojing
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @author <a href="mailto:lyuzb@lyuzb.com">lyuzb</a>
  */
 
 @ConfigurationProperties("spring.cloud.nacos.discovery")
@@ -66,9 +70,19 @@ public class NacosDiscoveryProperties {
 			.getLogger(NacosDiscoveryProperties.class);
 
 	/**
-	 * nacos discovery server address
+	 * nacos discovery server address.
 	 */
 	private String serverAddr;
+
+	/**
+	 * nacos auth username.
+	 */
+	private String username;
+
+	/**
+	 * nacos auth password.
+	 */
+	private String password;
 
 	/**
 	 * the domain name of a service, through which the server address can be dynamically
@@ -87,12 +101,12 @@ public class NacosDiscoveryProperties {
 	private long watchDelay = 30000;
 
 	/**
-	 * nacos naming log file name
+	 * nacos naming log file name.
 	 */
 	private String logName;
 
 	/**
-	 * service name to registry
+	 * service name to registry.
 	 */
 	@Value("${spring.cloud.nacos.discovery.service:${spring.application.name:}}")
 	private String service;
@@ -103,12 +117,17 @@ public class NacosDiscoveryProperties {
 	private float weight = 1;
 
 	/**
-	 * cluster name for nacos server.
+	 * cluster name for nacos .
 	 */
 	private String clusterName = "DEFAULT";
 
 	/**
-	 * naming load from local cache at application start. true is load
+	 * group name for nacos.
+	 */
+	private String group = "DEFAULT_GROUP";
+
+	/**
+	 * naming load from local cache at application start. true is load.
 	 */
 	private String namingLoadCacheAtStart = "false";
 
@@ -130,18 +149,18 @@ public class NacosDiscoveryProperties {
 	private String ip;
 
 	/**
-	 * which network interface's ip you want to register
+	 * which network interface's ip you want to register.
 	 */
 	private String networkInterface = "";
 
 	/**
 	 * The port your want to register for your service instance, needn't to set it if the
-	 * auto detect port works well
+	 * auto detect port works well.
 	 */
 	private int port = -1;
 
 	/**
-	 * whether your service is a https service
+	 * whether your service is a https service.
 	 */
 	private boolean secure = false;
 
@@ -176,9 +195,9 @@ public class NacosDiscoveryProperties {
 	@Autowired
 	private Environment environment;
 
-	private NamingService namingService;
+	private static NamingService namingService;
 
-	private NamingMaintainService namingMaintainService;
+	private static NamingMaintainService namingMaintainService;
 
 	@PostConstruct
 	public void init() throws SocketException {
@@ -189,7 +208,7 @@ public class NacosDiscoveryProperties {
 		}
 
 		serverAddr = Objects.toString(serverAddr, "");
-		if (serverAddr.lastIndexOf("/") != -1) {
+		if (serverAddr.endsWith("/")) {
 			serverAddr = serverAddr.substring(0, serverAddr.length() - 1);
 		}
 		endpoint = Objects.toString(endpoint, "");
@@ -394,25 +413,56 @@ public class NacosDiscoveryProperties {
 		this.watchDelay = watchDelay;
 	}
 
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	@Override
 	public String toString() {
 		return "NacosDiscoveryProperties{" + "serverAddr='" + serverAddr + '\''
 				+ ", endpoint='" + endpoint + '\'' + ", namespace='" + namespace + '\''
 				+ ", watchDelay=" + watchDelay + ", logName='" + logName + '\''
 				+ ", service='" + service + '\'' + ", weight=" + weight
-				+ ", clusterName='" + clusterName + '\'' + ", namingLoadCacheAtStart='"
-				+ namingLoadCacheAtStart + '\'' + ", metadata=" + metadata
-				+ ", registerEnabled=" + registerEnabled + ", ip='" + ip + '\''
-				+ ", networkInterface='" + networkInterface + '\'' + ", port=" + port
-				+ ", secure=" + secure + ", accessKey='" + accessKey + '\''
-				+ ", secretKey='" + secretKey + '\'' + '}';
+				+ ", clusterName='" + clusterName + '\'' + ", group='" + group + '\''
+				+ ", namingLoadCacheAtStart='" + namingLoadCacheAtStart + '\''
+				+ ", metadata=" + metadata + ", registerEnabled=" + registerEnabled
+				+ ", ip='" + ip + '\'' + ", networkInterface='" + networkInterface + '\''
+				+ ", port=" + port + ", secure=" + secure + ", accessKey='" + accessKey
+				+ '\'' + ", secretKey='" + secretKey + '\'' + ", heartBeatInterval="
+				+ heartBeatInterval + ", heartBeatTimeout=" + heartBeatTimeout
+				+ ", ipDeleteTimeout=" + ipDeleteTimeout + '}';
 	}
 
 	public void overrideFromEnv(Environment env) {
 
 		if (StringUtils.isEmpty(this.getServerAddr())) {
-			this.setServerAddr(env
-					.resolvePlaceholders("${spring.cloud.nacos.discovery.server-addr:}"));
+			String serverAddr = env
+					.resolvePlaceholders("${spring.cloud.nacos.discovery.server-addr:}");
+			if (StringUtils.isEmpty(serverAddr)) {
+				serverAddr = env
+						.resolvePlaceholders("${spring.cloud.nacos.server-addr:}");
+			}
+			this.setServerAddr(serverAddr);
 		}
 		if (StringUtils.isEmpty(this.getNamespace())) {
 			this.setNamespace(env
@@ -437,6 +487,18 @@ public class NacosDiscoveryProperties {
 		if (StringUtils.isEmpty(this.getEndpoint())) {
 			this.setEndpoint(
 					env.resolvePlaceholders("${spring.cloud.nacos.discovery.endpoint:}"));
+		}
+		if (StringUtils.isEmpty(this.getGroup())) {
+			this.setGroup(
+					env.resolvePlaceholders("${spring.cloud.nacos.discovery.group:}"));
+		}
+		if (StringUtils.isEmpty(this.getUsername())) {
+			this.setUsername(
+					env.resolvePlaceholders("${spring.cloud.nacos.username:}"));
+		}
+		if (StringUtils.isEmpty(this.getPassword())) {
+			this.setPassword(
+					env.resolvePlaceholders("${spring.cloud.nacos.password:}"));
 		}
 	}
 
@@ -476,6 +538,8 @@ public class NacosDiscoveryProperties {
 	private Properties getNacosProperties() {
 		Properties properties = new Properties();
 		properties.put(SERVER_ADDR, serverAddr);
+		properties.put(USERNAME, Objects.toString(username,""));
+		properties.put(PASSWORD, Objects.toString(password,""));
 		properties.put(NAMESPACE, namespace);
 		properties.put(UtilAndComs.NACOS_NAMING_LOG_NAME, logName);
 

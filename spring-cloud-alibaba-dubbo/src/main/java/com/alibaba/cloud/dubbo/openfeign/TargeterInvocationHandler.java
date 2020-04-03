@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2018 the original author or authors.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,19 +15,11 @@
  */
 package com.alibaba.cloud.dubbo.openfeign;
 
-import static java.lang.reflect.Proxy.newProxyInstance;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.dubbo.rpc.service.GenericService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cloud.openfeign.FeignContext;
-import org.springframework.core.env.Environment;
 
 import com.alibaba.cloud.dubbo.annotation.DubboTransported;
 import com.alibaba.cloud.dubbo.metadata.DubboRestServiceMetadata;
@@ -43,6 +34,14 @@ import com.alibaba.cloud.dubbo.service.DubboGenericServiceFactory;
 
 import feign.Contract;
 import feign.Target;
+import org.apache.dubbo.rpc.service.GenericService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.cloud.openfeign.FeignContext;
+import org.springframework.core.env.Environment;
+
+import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
  * org.springframework.cloud.openfeign.Targeter {@link InvocationHandler}
@@ -75,6 +74,10 @@ class TargeterInvocationHandler implements InvocationHandler {
 		this.repository = repository;
 		this.dubboGenericServiceFactory = dubboGenericServiceFactory;
 		this.contextFactory = contextFactory;
+	}
+
+	private static <T> T cast(Object object) {
+		return (T) object;
 	}
 
 	@Override
@@ -134,7 +137,7 @@ class TargeterInvocationHandler implements InvocationHandler {
 		}
 
 		// Update Metadata
-		repository.initialize(serviceName);
+		repository.initializeMetadata(serviceName);
 
 		Map<Method, FeignMethodMetadata> feignMethodMetadataMap = getFeignMethodMetadataMap(
 				serviceName, feignRestMethodMetadataMap);
@@ -179,9 +182,5 @@ class TargeterInvocationHandler implements InvocationHandler {
 		}
 
 		return feignMethodMetadataMap;
-	}
-
-	private static <T> T cast(Object object) {
-		return (T) object;
 	}
 }

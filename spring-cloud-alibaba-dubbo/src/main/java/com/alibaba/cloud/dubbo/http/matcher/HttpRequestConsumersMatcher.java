@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2018 the original author or authors.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,7 +41,7 @@ public class HttpRequestConsumersMatcher extends AbstractHttpRequestMatcher {
 	 * Creates a new instance from 0 or more "consumes" expressions.
 	 *
 	 * @param consumes consumes expressions if 0 expressions are provided, the condition
-	 * will match to every request
+	 *     will match to every request
 	 */
 	public HttpRequestConsumersMatcher(String... consumes) {
 		this(consumes, null);
@@ -70,6 +69,26 @@ public class HttpRequestConsumersMatcher extends AbstractHttpRequestMatcher {
 		Collections.sort(this.expressions);
 	}
 
+	private static Set<ConsumeMediaTypeExpression> parseExpressions(String[] consumes,
+			String[] headers) {
+		Set<ConsumeMediaTypeExpression> result = new LinkedHashSet<>();
+		if (headers != null) {
+			for (String header : headers) {
+				HeaderExpression expr = new HeaderExpression(header);
+				if ("Content-Type".equalsIgnoreCase(expr.name) && expr.value != null) {
+					for (MediaType mediaType : MediaType.parseMediaTypes(expr.value)) {
+						result.add(
+								new ConsumeMediaTypeExpression(mediaType, expr.negated));
+					}
+				}
+			}
+		}
+		for (String consume : consumes) {
+			result.add(new ConsumeMediaTypeExpression(consume));
+		}
+		return result;
+	}
+
 	@Override
 	public boolean match(HttpRequest request) {
 
@@ -92,26 +111,6 @@ public class HttpRequestConsumersMatcher extends AbstractHttpRequestMatcher {
 		}
 
 		return true;
-	}
-
-	private static Set<ConsumeMediaTypeExpression> parseExpressions(String[] consumes,
-			String[] headers) {
-		Set<ConsumeMediaTypeExpression> result = new LinkedHashSet<>();
-		if (headers != null) {
-			for (String header : headers) {
-				HeaderExpression expr = new HeaderExpression(header);
-				if ("Content-Type".equalsIgnoreCase(expr.name) && expr.value != null) {
-					for (MediaType mediaType : MediaType.parseMediaTypes(expr.value)) {
-						result.add(
-								new ConsumeMediaTypeExpression(mediaType, expr.negated));
-					}
-				}
-			}
-		}
-		for (String consume : consumes) {
-			result.add(new ConsumeMediaTypeExpression(consume));
-		}
-		return result;
 	}
 
 	@Override

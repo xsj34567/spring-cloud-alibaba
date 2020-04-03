@@ -1,12 +1,11 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright (C) 2018 the original author or authors.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,6 +42,17 @@ public class HttpRequestPathMatcher extends AbstractHttpRequestMatcher {
 	public HttpRequestPathMatcher(String... patterns) {
 		this.patterns = Collections.unmodifiableSet(prependLeadingSlash(patterns));
 		this.pathMatcher = new AntPathMatcher();
+	}
+
+	private static Set<String> prependLeadingSlash(String[] patterns) {
+		Set<String> result = new LinkedHashSet<>(patterns.length);
+		for (String pattern : patterns) {
+			if (StringUtils.hasLength(pattern) && !pattern.startsWith("/")) {
+				pattern = "/" + pattern;
+			}
+			result.add(pattern);
+		}
+		return result;
 	}
 
 	@Override
@@ -92,17 +102,6 @@ public class HttpRequestPathMatcher extends AbstractHttpRequestMatcher {
 	private String getPath(HttpRequest request) {
 		URI uri = request.getURI();
 		return uri.getPath();
-	}
-
-	private static Set<String> prependLeadingSlash(String[] patterns) {
-		Set<String> result = new LinkedHashSet<>(patterns.length);
-		for (String pattern : patterns) {
-			if (StringUtils.hasLength(pattern) && !pattern.startsWith("/")) {
-				pattern = "/" + pattern;
-			}
-			result.add(pattern);
-		}
-		return result;
 	}
 
 	@Override
